@@ -135,7 +135,7 @@ def generate_vae(opt, model, test_loader):
 
     test_dg = get_data_generator(test_loader)
 
-    epoch_length = len(train_loader)
+    epoch_length = len(test_loader)
     print('The epoch length is', epoch_length)
 
     total_iters = epoch_length
@@ -150,6 +150,7 @@ def generate_vae(opt, model, test_loader):
         data['iter_num'] = iter_i
         data['epoch'] = 0
         model.set_input(data)
+        #model.forward()
         seed_everything(opt.seed)
         model.inference()
         pbar.update

@@ -20,6 +20,7 @@ import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
 from plyfile import PlyData, PlyElement
+from pysdf import SDF
 
 logger = logging.getLogger("trimesh")
 logger.setLevel(logging.ERROR)
@@ -27,7 +28,7 @@ logger.setLevel(logging.ERROR)
 parser = argparse.ArgumentParser()
 parser.add_argument('--run', type=str, default="convert_mesh_to_sdf")
 parser.add_argument('--start', type=int, default=0)
-parser.add_argument('--end', type=int, default=45572)
+parser.add_argument('--end', type=int, default=2)
 parser.add_argument('--sdf_size', type=int, default=256)
 args = parser.parse_args()
 
@@ -36,8 +37,8 @@ size = 128                 # resolution of SDF
 level = 0.015            # 2/128 = 0.015625
 shape_scale = 0.5    # rescale the shape into [-0.5, 0.5]
 project_folder = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-root_folder = os.path.join(project_folder, 'data/ShapeNet')
-file_folder = 'data/ShapeNet/'
+file_folder = './recon_sscan'
+root_folder = os.path.join(project_folder, file_folder)
 
 
 def create_flag_file(filename):
@@ -126,15 +127,14 @@ def run_mesh2sdf():
     print('-> Run mesh2sdf.')
     mesh_scale = 0.8
     filenames = get_filenames('all.txt')
-    for i in tqdm(range(args.start, args.end), ncols=80):
+    for i in tqdm(range(len(filenames))):
         filename = filenames[i]
-        filename_raw = os.path.join(
-                file_folder, 'ShapeNetCore.v1', filename, 'model.obj')
+        filename_raw = os.path.join(file_folder, f"{filename}.obj")
         filename_obj = os.path.join(root_folder, 'mesh', filename + '.obj')
         filename_box = os.path.join(root_folder, 'bbox', filename + '.npz')
         filename_npy = os.path.join(root_folder, 'sdf', filename + '.npy')
         check_folder([filename_obj, filename_box, filename_npy])
-        if os.path.exists(filename_obj): continue
+        #if os.path.exists(filename_obj): continue
 
         # load the raw mesh
         mesh = trimesh.load(filename_raw, force='mesh')
@@ -146,8 +146,8 @@ def run_mesh2sdf():
         scale = 2.0 * mesh_scale / (bbmax - bbmin).max()
         vertices = (vertices - center) * scale
 
-        # run mesh2sdf
-        sdf, mesh_new = mesh2sdf.compute(vertices, mesh.faces, size, fix=True,level=level, return_mesh=True)
+        # run mesh2sdf, Legacy
+        sdf, mesh_new = mesh2sdf.compute(vertices, mesh.faces, size, fix=False, level=level, return_mesh=True)
         mesh_new.vertices = mesh_new.vertices * shape_scale
 
         # save
@@ -347,7 +347,7 @@ def sample_occu():
                                      [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]])
 
     # filenames = get_filenames('all.txt')
-    filenames = get_filenames('test.txt') + get_filenames('test_unseen5.txt')
+    filenames = get_filenames('test.txt')
     for filename in tqdm(filenames, ncols=80):
         filename_sdf = os.path.join(root_folder, 'sdf', filename + '.npy')
         filename_occu = os.path.join(root_folder, 'dataset', filename, 'points')
@@ -385,7 +385,7 @@ def generate_test_points():
     noise_std = 0.005
     point_sample_num = 3000
     # filenames = get_filenames('all.txt')
-    filenames = get_filenames('test.txt') + get_filenames('test_unseen5.txt')
+    filenames = get_filenames('test.txt')
     for filename in tqdm(filenames, ncols=80):
         filename_pts = os.path.join(
                 root_folder, 'dataset', filename, 'pointcloud.npz')
@@ -472,8 +472,9 @@ def generate_dataset():
     sample_sdf()
     sample_occu()
     generate_test_points()
-    generate_dataset_unseen5()
-    copy_convonet_filelists()
+
+    #generate_dataset_unseen5()
+    #copy_convonet_filelists()
 
 
 

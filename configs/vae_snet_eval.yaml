@@ -37,8 +37,8 @@ data:
         distort: False
 
         # data loading
-        location: &location data/ShapeNet/dataset_256
-        filelist: &filelist data/ShapeNet/filelist
+        location: &location recon_sscan/dataset
+        filelist: &filelist recon_sscan/filelist
         load_octree: &load_octree False
         load_pointcloud: &load_pointcloud True
         load_split_small: &load_split_small False

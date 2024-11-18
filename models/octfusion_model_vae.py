@@ -36,8 +36,41 @@ from utils.distributed import reduce_loss_dict, get_rank
 # rendering
 from utils.util_dualoctree import calc_sdf
 from utils.util import TorchRecoder, category_5_to_label
+import plotly.graph_objects as go
 
 TRUNCATED_TIME = 0.7
+
+def visualize_points(points):
+    # Create a 3D scatter plot
+    points = (points + 1.0) / 2.0
+    fig = go.Figure(
+        data=[go.Scatter3d(
+            x=points[:, 0],
+            y=points[:, 1],
+            z=points[:, 2],
+            mode='markers',
+            marker=dict(
+                size=5,
+                color=points[:, 2],  # Use z-values for color
+                colorscale='Viridis',  # Color scale
+                opacity=0.8
+            )
+        )]
+    )
+
+    # Update layout
+    fig.update_layout(
+        scene=dict(
+            xaxis_title='X Axis',
+            yaxis_title='Y Axis',
+            zaxis_title='Z Axis'
+        ),
+        title='3D Scatter Plot'
+    )
+
+    # Show the plot
+    fig.show()
+
 
 class OctFusionModel(BaseModel):
     def name(self):
@@ -148,9 +181,9 @@ class OctFusionModel(BaseModel):
         if self.load_octree:
             batch['octree_in'] = batch['octree_in'].cuda()
 
-        for key in ['pos', 'sdf', 'grad']:
-            batch[key] = batch[key].cuda()
-        batch['pos'].requires_grad = True
+        #for key in ['pos', 'sdf', 'grad']:
+        #    batch[key] = batch[key].cuda()
+        #batch['pos'].requires_grad = True
 
     def set_input(self, input=None):
         self.batch_to_cuda(input)
@@ -175,7 +208,7 @@ class OctFusionModel(BaseModel):
 
 
     def forward(self):
-        self.autoencoder.train()
+        #self.autoencoder.train()
         model_out = self.autoencoder_module(self.octree_in, self.octree_gt, self.batch['pos'])
         loss_func = self.get_loss_function()
         output = loss_func(self.batch, model_out, self.vq_conf.loss.loss_type, kl_weight=self.vq_conf.loss.kl_weight)
@@ -189,7 +222,8 @@ class OctFusionModel(BaseModel):
     @torch.no_grad()
     def inference(self, save_folder = "results_vae"):
         self.autoencoder.eval()
-        output = self.autoencoder.forward(octree_in = self.batch['octree_in'], evaluate=True)
+        #output = self.autoencoder.forward(octree_in=self.octree_in, evaluate=True)
+        output = self.autoencoder.forward(octree_in=self.octree_in, octree_out=self.octree_gt, evaluate=True)
         filename = self.batch['filename'][0]
         pos = filename.rfind('.')
         if pos != -1: 

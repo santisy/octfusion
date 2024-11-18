@@ -5,8 +5,8 @@ DATE_WITH_TIME=`date "+%Y-%m-%dT%H-%M-%S"`
 logs_dir='logs'
 
 ### set gpus ###
-# gpu_ids=0          # single-gpu
-gpu_ids=4,5,6,7       # multi-gpu
+gpu_ids=0          # single-gpu
+#gpu_ids=4,5,6,7       # multi-gpu
 
 if [ ${#gpu_ids} -gt 1 ]; then
     # specify these two if multi-gpu
@@ -41,7 +41,7 @@ category="$3"
 df_yaml="octfusion_${dataset_mode}_uncond.yaml"
 df_cfg="configs/${df_yaml}"
 vq_model="GraphVAE"
-vq_yaml="vae_${dataset_mode}_train.yaml"
+vq_yaml="vae_${dataset_mode}_eval.yaml"
 vq_cfg="configs/${vq_yaml}"
 vq_ckpt="saved_ckpt/vae-ckpt/vae-shapenet-depth-8.pth"
 
