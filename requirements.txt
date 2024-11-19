@@ -1,4 +1,4 @@
-ocnn
+ocnn==2.2.2
 h5py
 termcolor
 scipy
