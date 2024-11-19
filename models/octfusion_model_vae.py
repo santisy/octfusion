@@ -222,8 +222,8 @@ class OctFusionModel(BaseModel):
     @torch.no_grad()
     def inference(self, save_folder = "results_vae"):
         self.autoencoder.eval()
-        #output = self.autoencoder.forward(octree_in=self.octree_in, evaluate=True)
-        output = self.autoencoder.forward(octree_in=self.octree_in, octree_out=self.octree_gt, evaluate=True)
+        output = self.autoencoder.forward(octree_in=self.octree_in, evaluate=True)
+        #output = self.autoencoder.forward(octree_in=self.octree_in, octree_out=self.octree_gt, evaluate=True)
         filename = self.batch['filename'][0]
         pos = filename.rfind('.')
         if pos != -1: 
